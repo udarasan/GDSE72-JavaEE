@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 8px; text-align: left; }
+        input[type="text"], input[type="date"] {
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Event Manager</h2>
+
+<h3>Create / Update Event</h3>
+<input type="text" id="eid" placeholder="Event ID (for update/delete)">
+<input type="text" id="ename" placeholder="Event Name">
+<input type="text" id="edescription" placeholder="Description">
+<input type="date" id="edate">
+<input type="text" id="eplace" placeholder="Place">
+<button id="createEvent">Create</button>
+<button id="updateEvent">Update</button>
+<button id="deleteEvent">Delete</button>
+
+<h3>All Events</h3>
+<button id="getAllEvents">Get All</button>
+<table id="eventTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Date</th>
+        <th>Place</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script src="jquery-3.7.1.min.js"></script>
+<script>
+    const apiUrl = 'http://localhost:8080/App1_war_exploded/event';
+
+    function refreshTable(data) {
+        const tbody = $('#eventTable tbody');
+        tbody.empty();
+        data.forEach(event => {
+            tbody.append(`
+                <tr>
+                    <td>${event.eid}</td>
+                    <td>${event.ename}</td>
+                    <td>${event.edescription}</td>
+                    <td>${event.edate}</td>
+                    <td>${event.eplace}</td>
+                </tr>
+            `);
+        });
+    }
+
+    $('#getAllEvents').click(function () {
+        $.ajax({
+            url: apiUrl,
+            method: 'GET',
+            success: function (response) {
+                refreshTable(response);
+            },
+            error: function () {
+                alert("Error fetching data");
+            }
+        });
+    });
+
+    $('#createEvent').click(function () {
+        const event = {
+            eid:$('#eid').val(),
+            ename: $('#ename').val(),
+            edescription: $('#edescription').val(),
+            edate: $('#edate').val(),
+            eplace: $('#eplace').val()
+        };
+        $.ajax({
+            url: apiUrl,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(event),
+            success: function (response) {
+                alert('Event created');
+                $('#getAllEvents').click();
+            },
+            error: function () {
+                alert("Error creating event");
+            }
+        });
+    });
+
+    $('#updateEvent').click(function () {
+        const event = {
+            eid: $('#eid').val(),
+            ename: $('#ename').val(),
+            edescription: $('#edescription').val(),
+            edate: $('#edate').val(),
+            eplace: $('#eplace').val()
+        };
+        $.ajax({
+            url: apiUrl,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(event),
+            success: function (response) {
+                alert('Event updated');
+                $('#getAllEvents').click();
+            },
+            error: function () {
+                alert("Error updating event");
+            }
+        });
+    });
+
+    $('#deleteEvent').click(function () {
+        const eid = $('#eid').val();
+        if (!eid) {
+            alert("Please enter Event ID to delete.");
+            return;
+        }
+        $.ajax({
+            url: apiUrl,
+            method: 'DELETE',
+            contentType: 'application/json',
+            data: JSON.stringify({ eid }),
+            success: function (response) {
+                alert('Event deleted');
+                $('#getAllEvents').click();
+            },
+            error: function () {
+                alert("Error deleting event");
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
